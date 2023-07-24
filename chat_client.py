@@ -3,7 +3,6 @@ import socket
 HOST = input('Provide server IP address: ')  # The server's hostname or IP address
 PORT = int(input('Provide port number: '))  # The port used by the server
 
-
 def join():
     '''
     Called when client wishes to connect to server.
