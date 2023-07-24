@@ -6,6 +6,7 @@ class Chatroom:
     name = "Generic Room"
     uuid = uuid.uuid4()
     messages = []
+    chatroomOnlineUsers = []
 
     def __init__(self, name):
         self.name = name
@@ -34,6 +35,12 @@ class Chatroom:
     def getLastMessageData(self):
         '''Get the last message sent (not text but the object)'''
         return self.messages[len(self.messages)-1]
+    
+    def addOnlineUser(self, username):
+        self.chatroomOnlineUsers.append([username])
+
+    def setUserOffline(self, username):
+        self.chatroomOnlineUsers.remove(username)
 
 
 
