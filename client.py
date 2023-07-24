@@ -1,5 +1,6 @@
 import uuid
 import socket
+import time
 
 class Client:
     '''
@@ -24,11 +25,5 @@ class Client:
     
     def get_uuid(self):
         return self.uuid
-    
-    def send_message(self):
-        pass
-
-    def disconnect(self):
-        pass
 
     
