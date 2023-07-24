@@ -44,5 +44,5 @@ class Client:
         '''
         creates a message
         '''
-        message1 = message.__init__(self.username, payload, (calendar.timegm(gmtime), chatroomID, self.uuid))
+        message1 = Message(self.username, payload, (calendar.timegm(gmtime), chatroomID, self.uuid))
         return message1
