@@ -1,3 +1,4 @@
+from message import Message
 import message
 from time import gmtime
 import calendar
@@ -44,5 +45,5 @@ class Client:
         '''
         creates a message
         '''
-        message1 = message.__init__(self.username, payload, (calendar.timegm(gmtime), chatroomID, self.uuid))
-        return message1
+        message1 = Message(self.username, payload, (calendar.timegm(gmtime), chatroomID, self.uuid))
+        return message.encode(message1)
