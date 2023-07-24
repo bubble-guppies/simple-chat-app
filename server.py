@@ -46,14 +46,19 @@ class Server:
     
     def client_handler(self, connection):
         self.clients.append(connection)
-        connection.send(self.chatroom.getChatroom().encode())
+        message = ""
+        connection.send(self.chatroom.getChatroom()[1].bytes)
         while True:
-            data = connection.recv(4096)
-            message = data.decode('utf-8')
-            if message == "exit":
-                self.exit_connection(connection)
-                break
-            self.broadcast_message(message)
+            try:
+                data = connection.recv(4096, socket.MSG_DONTWAIT)
+                message = data.decode('utf-8')
+                if message == "exit":
+                    self.exit_connection(connection)
+                    break
+                self.broadcast_message(message)
+            except BlockingIOError as e:
+                pass
+
         connection.close()
 
     def accept_connections(self):
@@ -63,7 +68,7 @@ class Server:
     
     def broadcast_message(self, message):
         for client in self.clients:
-            client.send(message.to_str().encode())
+            client.send(message.encode())
 
     def exit_connection(self, connection):
         connection.close()
@@ -71,4 +76,4 @@ class Server:
 
     
 if __name__ == "__main__":
-    Server("", 8001, "Sample Chatroom")
+    Server("", 8000, "Sample Chatroom")

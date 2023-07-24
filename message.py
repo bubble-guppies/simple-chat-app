@@ -33,7 +33,8 @@ class Message:
     def get_uniqueID(self):
         '''returns uniqueID'''
         return self.__uniqueID
-    def encode_message(self,obj):
+        
+    def encode_message(self):
         '''Encodes content of other object'''
-        encoded_message = json.dumps(obj.get_payload())
+        encoded_message = self.__payload.encode("utf-8") # json.dumps(self).encode('utf8')
         return encoded_message
