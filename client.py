@@ -1,7 +1,6 @@
 from message import Message
 import message
-from time import gmtime
-import calendar
+import time
 import uuid
 
 class Client:
@@ -13,7 +12,7 @@ class Client:
     password = ""
     uuid = ""
 
-    def client(self, username, ip_address, password, uuid):
+    def __init__(self, username, ip_address, password, uuid):
         '''
         Initializes variables
         password is protected
@@ -45,5 +44,6 @@ class Client:
         '''
         creates a message
         '''
-        message1 = Message(self.username, payload, (calendar.timegm(gmtime), chatroomID, self.uuid))
-        return message.encode(message1)
+        message1 = Message(self.username, payload, time.time(), chatroomID, self.uuid)
+        return message1.encode_message()
+
