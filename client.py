@@ -1,4 +1,5 @@
 from message import Message
+import message
 from time import gmtime
 import calendar
 import uuid
@@ -45,4 +46,4 @@ class Client:
         creates a message
         '''
         message1 = Message(self.username, payload, (calendar.timegm(gmtime), chatroomID, self.uuid))
-        return message1
+        return message.encode(message1)
