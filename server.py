@@ -9,7 +9,7 @@ class Server:
     num_clients: int = 3
     server_socket: socket
     clients: list
-    chatroom: Chatroom
+    chatroom: chatroom.Chatroom
 
     def __init__(self, ip_address: str, port: int, chatroom_name: str):
         """Initialize a server object.
@@ -21,7 +21,7 @@ class Server:
         self.ip_address = ip_address
         self.port = port
         self.clients = []
-        self.chatroom = Chatroom(chatroom_name)
+        self.chatroom = chatroom.Chatroom(chatroom_name)
         self.create_socket()
         while True:
             self.accept_connections()
@@ -46,14 +46,14 @@ class Server:
     
     def client_handler(self, connection):
         self.clients.append(connection)
-        connection.send(str.encode("You are now connected to the server."))
+        connection.send(self.chatroom.getChatroom().encode())
         while True:
-            data = connection.recv(2048)
+            data = connection.recv(4096)
             message = data.decode('utf-8')
             if message == "exit":
+                self.exit_connection(connection)
                 break
-            reply = f"Server: {message}"
-            connection.sendall(str.encode(reply))
+            self.broadcast_message(message)
         connection.close()
 
     def accept_connections(self):
