@@ -34,5 +34,6 @@ class Message:
         '''returns uniqueID'''
         return self.__uniqueID
     def encode_message(self,obj):
-        encoded_message = json.dumps(obj.get_payload)
+        '''Encodes content of other object'''
+        encoded_message = json.dumps(obj.get_payload())
         return encoded_message
