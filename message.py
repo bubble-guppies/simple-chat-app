@@ -1,3 +1,4 @@
+import json
 class Message:
     def __init__(self,sender, payload, timestamp, chatroomID, uniqueID):
         self.__sender = sender
@@ -32,4 +33,6 @@ class Message:
     def get_uniqueID(self):
         '''returns uniqueID'''
         return self.__uniqueID
-    
+    def encode_message(self,obj):
+        encoded_message = json.dumps(obj.get_payload)
+        return encoded_message
