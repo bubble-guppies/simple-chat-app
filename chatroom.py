@@ -14,10 +14,7 @@ class Chatroom:
     def addMessage(self, message):
         '''Arguments: Message Object
         Functionality: Adds a message to an array of messages sent in a chatroom'''
-        if type(message) != str:
-            self.messages.append(["Message Error: Not String"])
-        else:
-            self.messages.append([[message.get_sender()],[message.get_payload()],[calendar.timegm(gmtime)],[self.uuid],[message.get_uniqueID()]])
+        self.messages.append(message)
 
     def modifyChatroomName(self, name):
         '''Change the name of a chatroom'''
@@ -35,6 +32,13 @@ class Chatroom:
     def getLastMessageData(self):
         '''Get the last message sent (not text but the object)'''
         return self.messages[len(self.messages)-1]
+    
+    def getRecentMessages(self):
+        '''Get the last 10 (or all, if there are less than 10) messages.'''
+        if len(self.messages) > 10:
+            return self.messages[-10:]
+        else:
+            return self.messages
     
     def addOnlineUser(self, username):
         self.chatroomOnlineUsers.append([username])
