@@ -58,7 +58,7 @@ class Client:
         user_data = f"$USERDATA$:{self.username},{self._password}"
         s.send(user_data.encode())
 
-        auth_status = s.recv(2048).decode("utf-8")
+        auth_status = s.recv(4096).decode("utf-8")
         if auth_status == "$AUTHENTICATED$":
             return True
         elif auth_status == "$FAILED$":

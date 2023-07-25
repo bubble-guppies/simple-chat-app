@@ -98,6 +98,7 @@ class Server:
             msg = decode_message(message)
             to_send = msg.message().encode()
             self.chatroom.addMessage(msg)
+            print(f"Message from {msg.get_sender()}: {msg.get_payload()}")
         except Exception as e:
             print(f"Error decoding message: {e}")
 
