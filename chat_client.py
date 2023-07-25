@@ -74,7 +74,7 @@ def send_msg(s: socket, msg_str: str, client: Client, chatroom_id):
     '''
     Called when client wishes to send a string to the server (msg).
     '''
-    encodedMessage = client.create_message(Client.get_username, msg_str)
+    encodedMessage = client.create_message(chatroom_id, msg_str)
     s.send(encodedMessage)
 
 if __name__ == "__main__":
