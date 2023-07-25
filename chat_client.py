@@ -5,7 +5,6 @@ import os
 from client import Client
 from _thread import start_new_thread
 from getpass import getpass
-import bcrypt
 
 def get_server() -> tuple[str, int]:
     HOST = input('Provide server IP address >\n')  # The server's hostname or IP address
@@ -31,7 +30,7 @@ def join(host, port, client):
         s.connect((host, port))
         s.send("$STARTUP$".encode())
         
-        if s.recv(2048).decode() == "$STARTUP$":
+        if s.recv(4096).decode() == "$STARTUP$":
             # authenticate the user
             if not client.authenticate(s):
                 print("Failed to authenticate. Please run the program again.")
@@ -39,11 +38,12 @@ def join(host, port, client):
             
             # after authentication, request chatroom information
             s.send("$REQUEST_CHATROOM_DATA$".encode())
-            chatroom_name = s.recv(2048).decode()
-            # chatroom_id = uuid.UUID(bytes=s.recv(2048))
-            chatroom_id = s.recv(2048)
-            last_10 = s.recv(2048).decode()
-            print(f"{chatroom_id = }")
+            raw_msg = s.recv(4096)
+            print(raw_msg)
+            (chatroom_name, chatroom_bytes, last_10) = raw_msg.decode().split(",")
+            print(f"{chatroom_name = }, {chatroom_bytes = }, {last_10 = }")
+            chatroom_id = uuid.UUID(bytes=chatroom_bytes.encode())
+            last_10 = last_10
             print(f"--- Connected to {chatroom_name} ---")
             print(last_10)
             s.send("$END_STARTUP$".encode())
@@ -52,7 +52,7 @@ def join(host, port, client):
         start_new_thread(write_handler, (s, client, chatroom_id, ))
         while True:
             # loop to listen for new messages
-            msg = s.recv(2048)
+            msg = s.recv(4096)
             print(f"{msg.decode()}")
 
 def write_handler(s: socket, client: Client, chatroom_id: uuid):

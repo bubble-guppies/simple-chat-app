@@ -91,15 +91,14 @@ class Server:
 
                 if reply == "$AUTHENTICATED$":
                     # once a user is authenticated, they will request chatroom data
-                    if client.recv(2048).decode() == "$REQUEST_CHATROOM_DATA$":
-                        print(f"sending chatroom data\n{self.chatroom.getChatroom()[0].encode() = }\n{self.chatroom.getChatroom()[1].bytes =}")
-                        client.send(self.chatroom.getChatroom()[0].encode()) # chatroom name
-                        client.send(self.chatroom.getChatroom()[1].bytes) # chatroom id
-                        msg_data = " "
+                    request = client.recv(4096).decode()
+                    if request == "$REQUEST_CHATROOM_DATA$":
+                        recent_msgs = " "
                         for msg in self.chatroom.getRecentMessages():
-                            msg_data += msg.message() + "\n"
-                        print(f"{msg_data = }")
-                        client.send(msg_data.encode()) # recent 10 messages
+                            recent_msgs += msg.message() + "\n"
+                        print(f"{recent_msgs = }")
+                        msg = f"{self.chatroom.getChatroom()[0]},{self.chatroom.getChatroom()[1]},{recent_msgs}"
+                        client.send(msg.encode()) # recent 10 messages
             self.clients.append((client,username))
 
     def broadcast_message(self, message, sender):
