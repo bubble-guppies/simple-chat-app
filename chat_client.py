@@ -63,12 +63,12 @@ def write_handler(s: socket, client: Client, chatroom_id: uuid):
             return
         send_msg(s, message_str, client, chatroom_id)
 
-def leave():
+def leave(s):
     ''' 
     Called when client wishes to disconnect from the server.
     '''
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.disconnect((host, port))
+        s.close()
 
 def send_msg(s: socket, msg_str: str, client: Client, chatroom_id):
     '''
