@@ -39,17 +39,17 @@ def join(host, port, client):
         # chatroom_name
         # chatroom_id
         # recent 10 messages
-        chatroom_name = s.recv(4096).decode()
-        chatroom_id = uuid.UUID(bytes=s.recv(4096))
-        last_10 = s.recv(4096).decode()
-        print(f"--- Connected to {chatroom_name} ---")
-        print(last_10)
+        #chatroom_name = s.recv(2048).decode()
+        chatroom_id = uuid.uuid4()
+        #last_10 = s.recv(4096).decode()
+        #print(f"--- Connected to {chatroom_name} ---")
+        #print(last_10)
 
         # create a separate thread to handle user input
         start_new_thread(write_handler, (s, client, chatroom_id, ))
         while True:
             # loop to listen for new messages
-            msg = s.recv(4096)
+            msg = s.recv(2048)
             print(f"{msg.decode()}")
 
 def write_handler(s: socket, client: Client, chatroom_id: uuid):
