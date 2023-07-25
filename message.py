@@ -71,11 +71,11 @@ def decode_message(msg):
     try:
         chatroom_id = json_msg["chatroom"]
     except Exception as e:
-        chatroom_id = 0
+        chatroom_id = uuid.uuid1()
     try:
         msg_id = json_msg["uuid"]
     except Exception as e:
-        msg_id = 0
+        msg_id = uuid.uuid1()
     return Message(
         sender, payload, chatroom_id, timestamp, msg_id
     )
