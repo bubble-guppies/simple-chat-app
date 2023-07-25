@@ -1,6 +1,6 @@
 import socket
 import chatroom
-from message import decode_message
+from message import decode_message, Message
 import sys
 import json
 from bcrypt import checkpw
@@ -48,49 +48,59 @@ class Server:
 
         return
 
-    def client_handler(self, connection):
-        self.clients.append(connection)
-
+    def client_handler(self, client):
         while True:
-            data = connection.recv(2048)
-            message = data.decode("utf-8")
-
-            # check for special messages
-            if message == "exit":
+            data = client.recv(2048)
+            if not data:
                 break
-
-            # Password authentication
-            elif "$USERDATA$:" in message:
-                (username, password) = message.split(":")[1].split(",")
-                if self.authenticate(username, password):
-                    print(f"Successfully authenticated '{username}.'")
-                    msg = "$AUTHENTICATED$"
-
-                else:
-                    print(f"Failed to authenciate '{username}.'")
-                    msg = "$FAILED$"
-
-                connection.send(msg.encode())
-                if msg == "$AUTHENTICATED$":
-                    # if a user is authenticated, give them chatroom info
-                    connection.send(self.chatroom.getChatroom()[0].encode()) # chatroom name
-                    connection.send(self.chatroom.getChatroom()[1].bytes) # chatroom id
-                    msg_data = " "
-                    for msg in self.chatroom.getRecentMessages():
-                        msg_data += msg.message() + "\n"
-                    connection.send(msg_data.encode()) # recent 10 messages
-
-                continue
-
+            message = data.decode("utf-8")
+            
             # default processing
-            self.broadcast_message(message, connection)
+            self.broadcast_message(message, client)
 
-        self.exit_connection(connection)
+        self.exit_connection(client)
 
     def accept_connections(self):
         client, address = self.server_socket.accept()
         print(f"Connected to: {address[0]}:{str(address[1])}")
+        self.client_startup(client)
         start_new_thread(self.client_handler, (client,))
+
+    def client_startup(self, client: socket):
+        """This function is called when a client starts a connection with the server.
+        See README.txt for information about the startup procedure. 
+        """
+        username = ""
+        startup = client.recv(2048).decode("utf-8")
+        if startup == "$STARTUP$":
+            client.send("$STARTUP$".encode())
+            # Password authentication
+            user_data_msg = client.recv(2048).decode("utf-8")
+            if user_data_msg == "$SENDING_USERDATA$":
+                user_data = client.recv(2048).decode()
+                (username, password) = user_data.split(",")
+                if self.authenticate(username, password):
+                    print(f"Successfully authenticated '{username}.'")
+                    reply = "$AUTHENTICATED$"
+
+                else:
+                    print(f"Failed to authenticate '{username}.'")
+                    reply = "$FAILED$"
+
+                client.send(reply.encode())
+
+                if reply == "$AUTHENTICATED$":
+                    # once a user is authenticated, they will request chatroom data
+                    if client.recv(2048).decode() == "$REQUEST_CHATROOM_DATA$":
+                        print(f"sending chatroom data\n{self.chatroom.getChatroom()[0].encode() = }\n{self.chatroom.getChatroom()[1].bytes =}")
+                        client.send(self.chatroom.getChatroom()[0].encode()) # chatroom name
+                        client.send(self.chatroom.getChatroom()[1].bytes) # chatroom id
+                        msg_data = " "
+                        for msg in self.chatroom.getRecentMessages():
+                            msg_data += msg.message() + "\n"
+                        print(f"{msg_data = }")
+                        client.send(msg_data.encode()) # recent 10 messages
+            self.clients.append((client,username))
 
     def broadcast_message(self, message, sender):
         to_send = ""
@@ -108,10 +118,13 @@ class Server:
                 except socket.error as e:
                     print(f"Error while sending message to {client}: {e}")
 
-    def exit_connection(self, connection):
-        if connection in self.clients:
-            self.clients.remove(connection)
-        connection.close()
+    def exit_connection(self, conn):
+        for (client, username) in self.clients:
+            if client == conn:
+                self.clients.remove((conn, username))
+                disconnect_message = Message("Server", f"<{username} has disconnected from the chatroom>", self.chatroom.getChatroom()[1])
+                self.broadcast_message(disconnect_message.encode_message(), None)
+        client.close()
 
     def authenticate(self, username: str, password: str) -> bool:
         with open("pass.json", "r") as file:
@@ -120,7 +133,7 @@ class Server:
                 passwords_dict = json.load(file)
             except Exception as e:
                 pass  # <- ADD ERROR HANDLING
-            print(f"{passwords_dict[username]}")
+
             # try to compare passwords
             try:
                 return checkpw(

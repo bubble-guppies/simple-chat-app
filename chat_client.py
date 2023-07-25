@@ -19,31 +19,34 @@ def get_client() -> Client:
     username = input('Provide username >\n')
     password = getpass('Provide password >\n')
     host = socket.gethostbyname(socket.gethostname()) # ip address of client
-    clientUUID = uuid.uuid4()
 
-    return Client(username, host, password, clientUUID)
+    return Client(username, host, password)
 
 def join(host, port, client):
     '''
     Called when client wishes to connect to server.
+    See README.txt for information about the startup procedure. 
     '''
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((host, port))
-
-        # authenticate the user
-        if not client.authenticate(s):
-            print("Failed to authenticate. Please run the program again.")
-            return
-
-        # after authentication, the server sends three messages:
-        # chatroom_name
-        # chatroom_id
-        # recent 10 messages
-        chatroom_name = s.recv(2048).decode()
-        chatroom_id = uuid.UUID(bytes=s.recv(2048))
-        last_10 = s.recv(2048).decode()
-        print(f"--- Connected to {chatroom_name} ---")
-        print(last_10)
+        s.send("$STARTUP$".encode())
+        
+        if s.recv(2048).decode() == "$STARTUP$":
+            # authenticate the user
+            if not client.authenticate(s):
+                print("Failed to authenticate. Please run the program again.")
+                return
+            
+            # after authentication, request chatroom information
+            s.send("$REQUEST_CHATROOM_DATA$".encode())
+            chatroom_name = s.recv(2048).decode()
+            # chatroom_id = uuid.UUID(bytes=s.recv(2048))
+            chatroom_id = s.recv(2048)
+            last_10 = s.recv(2048).decode()
+            print(f"{chatroom_id = }")
+            print(f"--- Connected to {chatroom_name} ---")
+            print(last_10)
+            s.send("$END_STARTUP$".encode())
 
         # create a separate thread to handle user input
         start_new_thread(write_handler, (s, client, chatroom_id, ))
@@ -63,12 +66,11 @@ def write_handler(s: socket, client: Client, chatroom_id: uuid):
             return
         send_msg(s, message_str, client, chatroom_id)
 
-def leave():
+def leave(s: socket):
     ''' 
     Called when client wishes to disconnect from the server.
     '''
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.disconnect((host, port))
+    s.close()
 
 def send_msg(s: socket, msg_str: str, client: Client, chatroom_id):
     '''
