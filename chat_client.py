@@ -40,7 +40,7 @@ def join(host, port, client):
         # chatroom_id
         # recent 10 messages
         #chatroom_name = s.recv(2048).decode()
-        chatroom_id = uuid.uuid4()
+        chatroom_id = s.recv(2048).decode()
         #last_10 = s.recv(4096).decode()
         #print(f"--- Connected to {chatroom_name} ---")
         #print(last_10)

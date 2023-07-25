@@ -99,7 +99,7 @@ class Server:
         to_send = ""       
         if message:
             try:
-                msg = decode_message(message)[43:]
+                msg = decode_message(message)
                 to_send = msg.message().encode()
                 self.chatroom.addMessage(msg)
                 print(f"Message from {msg.get_sender()}: {msg.get_payload()}")
