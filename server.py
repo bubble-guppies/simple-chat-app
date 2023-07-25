@@ -73,12 +73,15 @@ class Server:
                 connection.send(msg.encode())
                 if msg == "$AUTHENTICATED$":
                     # if a user is authenticated, give them chatroom info
-                    connection.send(self.chatroom.getChatroom()[0].encode()) # chatroom name
-                    connection.send(self.chatroom.getChatroom()[1].bytes) # chatroom id
-                    msg_data = " "
-                    for msg in self.chatroom.getRecentMessages():
-                        msg_data += msg.message() + "\n"
-                    connection.send(msg_data.encode()) # recent 10 messages
+                    #connection.send(self.chatroom.getChatroom()[0].encode()) # chatroom name
+                    #connection.send(self.chatroom.getChatroom()[1].bytes) # chatroom id
+                    #msg_data = " "
+                    #for msg in self.chatroom.getRecentMessages():
+                    #    msg_data += msg.message() + "\n"
+                    #connection.send(msg_data.encode()) # recent 10 messages
+                    connection.send("".encode())
+                    connection.send("".encode())
+                    connection.send("".encode())
 
                 continue
 
@@ -93,21 +96,24 @@ class Server:
         start_new_thread(self.client_handler, (client,))
 
     def broadcast_message(self, message, sender):
-        to_send = ""
-        try:
-            msg = decode_message(message)
-            to_send = msg.message().encode()
-            self.chatroom.addMessage(msg)
-            print(f"Message from {msg.get_sender()}: {msg.get_payload()}")
-        except Exception as e:
-            print(f"Error decoding message: {e}")
+        to_send = ""       
+        if message:
+            try:
+                msg = decode_message(message)
+                to_send = msg.message().encode()
+                self.chatroom.addMessage(msg)
+                print(f"Message from {msg.get_sender()}: {msg.get_payload()}")
+                for client in self.clients:
+                    if client != sender:
+                        try:
+                            client.send(to_send)
+                        except socket.error as e:
+                            print(f"Error while sending message to {client}: {e}")
+            except Exception as e:
+                print(f"Error decoding message: {e}")
 
-        for client in self.clients:
-            if client != sender:
-                try:
-                    client.send(to_send)
-                except socket.error as e:
-                    print(f"Error while sending message to {client}: {e}")
+            
+
 
     def exit_connection(self, connection):
         if connection in self.clients:
