@@ -10,7 +10,7 @@ from _thread import *
 class Server:
     ip_address: str
     port: int
-    num_clients: int = 3
+    num_clients: int = 10
     server_socket: socket
     clients: list
     chatroom: chatroom.Chatroom
