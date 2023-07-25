@@ -133,4 +133,4 @@ class Server:
 
 
 if __name__ == "__main__":
-    Server("", 8001, "Sample Chatroom")
+    Server("", 8000, "Sample Chatroom")

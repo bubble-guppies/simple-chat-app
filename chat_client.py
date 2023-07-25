@@ -6,17 +6,31 @@ from _thread import start_new_thread
 from getpass import getpass
 import bcrypt
 
-HOST = input('Provide server IP address: ')  # The server's hostname or IP address
-PORT = int(input('Provide port number: '))  # The port used by the server
+def get_server() -> tuple[str, int]:
+    HOST = input('Provide server IP address >\n')  # The server's hostname or IP address
+    PORT = int(input('Provide port number >\n'))  # The port used by the server
+    return (HOST, PORT)
+    
+def get_client(host) -> Client:
+    username = input('Provide username >\n')
+    password = input('Provide password >\n')
 
+    #Create new client object for interaction w/ remote host
+    clientUUID = uuid.uuid4()
+    return Client(username, host, password, clientUUID)
 
-def join():
+def join(host, port, client):
+    '''
+    Called when client wishes to connect to server.
+    '''
     # if type(PORT) is not int:
     #     raise TypeError("Port number must be integer.")
     
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, PORT))
-        data = s.recv(2048)
+        s.connect((host, port))
+
+        # the first message sent by the server should be the chatroom ID?
+        chatroom_id = uuid.UUID(bytes=s.recv(4096))
 
         # authenticate the user
         if not client.authenticate(s):
@@ -52,8 +66,18 @@ def write_handler(s: socket, client: Client, chatroom_id: uuid):
         send_msg(s, message_str, client, chatroom_id)
 
 def leave():
+    ''' 
+    Called when client wishes to disconnect from the server.
+    '''
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.disconnect((HOST, PORT))
+        s.disconnect((host, port))
+
+def send_msg(s: socket, msg_str: str, client: Client, chatroom_id):
+    '''
+    Called when client wishes to send a string to the server (msg).
+    '''
+    encodedMessage = client.create_message(chatroom_id, msg_str)
+    s.send(encodedMessage)
 
 def send_msg(s: socket, msg_str: str, client: Client, chatroom_id):
     '''

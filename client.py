@@ -11,7 +11,7 @@ class Client:
     _password = ""
     uuid = ""
 
-    def client(self, username, ip_address, password, uuid):
+    def __init__(self, username, ip_address, password, uuid):
         '''
         Initializes variables
         password is protected

@@ -23,7 +23,7 @@ class Chatroom:
     def getChatroom(self):
         '''Gets the information of a chatroom in an array 
         (formated x[0] = name x=[1] = uuid)'''
-        return [[self.name],[self.uuid]]
+        return [self.name,self.uuid]
     
     def getMessages(self):
         '''Get messages array'''
@@ -41,7 +41,7 @@ class Chatroom:
             return self.messages
     
     def addOnlineUser(self, username):
-        self.chatroomOnlineUsers.append([username])
+        self.chatroomOnlineUsers.append(username)
 
     def setUserOffline(self, username):
         self.chatroomOnlineUsers.remove(username)
