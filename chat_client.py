@@ -27,25 +27,31 @@ def join(host, port, client):
 
         # the first message sent by the server should be the chatroom ID?
         chatroom_id = uuid.UUID(bytes=s.recv(4096))
-
+        # start_new_thread(read_handler, (s, ))
+        start_new_thread(write_handler, (s, client, chatroom_id, ))
         while True:
-            run(s, chatroom_id, client)
+            raw_msg = s.recv(2048)
+            print(f"{raw_msg.decode() = }")
 
-def run(s, chatroom_id, client):
-    try:
-        data = s.recv(2048, socket.MSG_DONTWAIT)
-        print(f"Received {data.decode()}\n")
-    except BlockingIOError as e:
-        pass
-    message_str = input("Enter a message >")
-    send_msg(s, message_str, client, chatroom_id)
+def write_handler(s: socket, client: Client, chatroom_id: uuid):
+    '''
+    Handles the client writing messages to the server.
+    '''
+    while True:
+        print("Enter a message > ")
+        message_str = input()
+        if message_str == "exit":
+            leave(s)
+            return
+        send_msg(s, message_str, client, chatroom_id)
+        # s.send(message_str.encode())
 
-def leave():
+def leave(s: socket):
     ''' 
     Called when client wishes to disconnect from the server.
     '''
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.disconnect((host, port))
+    s.close()
+    os._exit(1)
 
 def send_msg(s: socket, msg_str: str, client: Client, chatroom_id):
     '''
